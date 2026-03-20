@@ -1,65 +1,41 @@
-"""This module provides ..."""
+"""{...}."""
 
-import collections.abc
-import typing
+from sthali_auth import APIKey, SthaliAuth
+from sthali_auth import definitions as auth_definitions
+from sthali_crud import SthaliCRUD
+from sthali_db import definitions_type
 
-import pydantic
-
-# import sthali_auth
-import sthali_crud
-
-from .config import Config
-
-__all__ = [
-    "AppSpecification",
-    "Config",
-    "SthaliBackend",
-    "default_lifespan",
-]
+from .config import config
+from .models import ProjectModel
+from .routers.root import ROOT
+from .routers.views import VIEWS
+from .schemas import ProjectSchemas
 
 
-default_lifespan = sthali_crud.default_lifespan
+class SthaliBackend(SthaliCRUD):
+    """{...}."""
 
+    def __init__(self, definitions: definitions_type) -> None:
+        """{...}."""
+        dependencies = {}
+        if "auth" in config.yaml_config:
+            for _type, definition in config.yaml_config["auth"].items():
+                client = SthaliAuth.from_type(_type, definition).client
+                dependencies[_type] = client.dependency
 
-@pydantic.dataclasses.dataclass
-class AppSpecification(sthali_crud.AppSpecification):
-    """Represents the specification of a SthaliBackend application."""
+            definitions += auth_definitions
 
-    # auth: typing.Annotated[
-    #     sthali_auth.AuthSpecification,
-    #     pydantic.Field(default=None, description="The dependencies for the application"),
-    # ]
+            if "api_key" in config.yaml_config["auth"]:
+                api_key = APIKey.from_type(**config.yaml_config["auth"]["api_key"])
+                dependencies["api_key"] = api_key.dependency
 
-    def __post_init__(self):
-        self.title = "SthaliBackend"
-        self.description = "A FastAPI package for implement services."
+        super().__init__(config, definitions, extended_routers=[VIEWS], dependencies=dependencies)
+        root = ROOT()
+        self.app.include_router(root.api_router)
 
+definitions: definitions_type = [
+    (ProjectModel, ProjectSchemas),
+]  # type: ignore
 
-class SthaliBackend(sthali_crud.SthaliCRUD):
-    """A class to initialize and configure a FastAPI application with {...}.
-
-    Args:
-        app_spec (AppSpecification): The specification of the application, including title, description, summary,
-            version, dependencies, and resources.
-        lifespan (collections.abc.Callable[..., typing.Any]): The lifespan of the application.
-            Defaults to default_lifespan.
-    """
-
-    def __init__(
-        self, app_spec: AppSpecification, lifespan: collections.abc.Callable[..., typing.Any] = default_lifespan
-    ) -> None:
-        """Initializes the SthaliBackend instance.
-
-        Args:
-            app_spec (AppSpecification): The specification of the application, including title, description, summary,
-                version, dependencies, and resources.
-            lifespan (collections.abc.Callable[..., typing.Any]): The lifespan of the application.
-                Defaults to default_lifespan.
-        """
-        # if app_spec.auth:
-        #     auth = sthali_auth.Auth(app_spec.auth)
-        #     breakpoint()
-        #     # auth_dependency = auth.dependency
-        #     # app_spec.add_dependency(auth_dependency)
-
-        super().__init__(app_spec, lifespan)
+sthali_backend = SthaliBackend(definitions)
+app = sthali_backend.app

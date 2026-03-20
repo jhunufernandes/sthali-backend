@@ -1,0 +1,7 @@
+crudmodels:
+  database_uri: sqlite+aiosqlite:///sthali_backend.db
+auth:
+  api_key:
+    type: header
+    name: x-api_key
+  http:

@@ -6,11 +6,11 @@ requires = [
 
 [project]
 name = "sthali-backend"
-version = "0.0.2"
+version = "0.0.1"
 authors = [
   { name = "Jhunu Fernandes", email = "jhunu.fernandes@gmail.com" },
 ]
-description = "A FastAPI package for implement services"
+description = "A FastAPI lib for keep your app safe"
 readme = "README.md"
 requires-python = ">= 3.10"
 classifiers = [
@@ -30,7 +30,20 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "sthali-crud >= 0.0.7",
+  # "alembic",
+  "sthali-db @ file:../sthali-db/",
+  "sthali-auth @ file:../sthali-auth/",
+  "sthali-crud @ file:../sthali-crud/",
+  "sthali-core @ file:../sthali-core/",
+  "uvicorn",
+  "aiosqlite",
+  "greenlet",
+
+  # "jinja2",
+  # "pwdlib[argon2]",
+  # "pyjwt",
+  # "python-multipart",
+  # "tenacity",
 ]
 
 [project.urls]
@@ -42,15 +55,15 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "coverage[toml] >= 7.9.1",
-  "ruff >= 0.12.0",
+  "coverage[toml] >= 7.12.0",
+  "ruff >= 0.14.6",
 ]
 tests = [
-  "coverage[toml] >= 7.9.1",
+  "coverage[toml] >= 7.12.0",
 ]
 stage = [
-  "build >= 1.2.1",
-  "coverage[toml] >= 7.9.1",
+  "build >= 1.3.0",
+  "coverage[toml] >= 7.12.0",
 ]
 
 [tool.ruff]
@@ -80,3 +93,11 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.alembic]
+script_location = "%(here)s/alembic"
+file_template = "%%(year)d_%%(month).2d_%%(day).2d_%%(hour).2d%%(minute).2d-%%(rev)s_%%(slug)s"
+prepend_sys_path = [
+  ".",
+]
+sqlalchemy_url = "sqlite:///sthali_auth.db"

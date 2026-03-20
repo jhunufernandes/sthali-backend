@@ -1,0 +1,36 @@
+{% extends "components/base.html" %}
+
+{% block content %}
+
+<ul class="nav nav-pills mb-3">
+    <li class="nav-item">
+        <a class="btn btn-outline-primary" href="{{ url_for(url_for_view_create) }}">new</a>
+    </li>
+</ul>
+
+<table class="table table-striped table-fixed">
+    <thead>
+        <tr class="table-primary table-dark">
+            {% for header in table_headers %}
+            <th scope="col">{{ header }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in resources %}
+        <tr>
+            {% for header in table_headers %}
+            <td>
+                {% if header == "id" %}
+                    <a href="{{ url_for(url_for_view_read, resource_id=r[header]) }}">{{ r[header] }}</a>
+                {% else %}
+                    {{ r[header] }}
+                {% endif %}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

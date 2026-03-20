@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+
+<head>
+    {% include 'components/head.html' with context %}
+</head>
+
+<body>
+    {% include 'components/navbar.html' with context %}
+    <main class="container-fluid py-5 my-5 mx-0">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+
+</html>

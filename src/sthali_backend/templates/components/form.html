@@ -1,0 +1,64 @@
+<form id="resourceForm">
+    <ul class="nav nav-pills mb-3">
+        <li class="nav-item">
+            <button type="submit" id="submitBtn" class="btn btn-outline-primary">{{ "Create" if form_action ==
+                "CREATE" else "Update" }}</button>
+            {% if form_action != "CREATE" %}
+            <button type="submit" id="deleteBtn" class="btn btn-outline-danger">Delete</button>
+            {% endif %}
+        </li>
+    </ul>
+
+    {% for field in form_fields %}
+    <div class="mb-3">
+        <label for="{{ field.name }}" class="form-label">{{ field.name }}</label>
+        <input
+            type="{{ field.type }}"
+            class="form-control bg-dark text-bg-dark"
+            id="{{ field.name }}"
+            name="{{ field.name }}"
+            value="{{ resource[field.name] if resource else '' }}"
+            {{ field.disabled }}
+        >
+    </div>
+    {% endfor %}
+</form>
+
+<script>
+    document.getElementById("resourceForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const isDelete = event.submitter?.id === "deleteBtn";
+        if (isDelete && !confirm("Delete this item?")) return;
+
+        const form = event.target;
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        const filteredData = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== ""));
+
+        const formAction = "{{ form_action or 'null' }}";
+        let urlForm;
+        let method;
+        if (isDelete) {
+            urlForm = "{{ url_for(url_for_api_delete, resource_id=resource.id) if resource else '' }}";
+            method = "DELETE";
+        } else if (formAction == "UPDATE") {
+            urlForm = "{{ url_for(url_for_api_update, resource_id=resource.id) if resource else '' }}";
+            method = "PUT";
+        } else {
+            urlForm = "{{ url_for(url_for_api_create) }}";
+            method = "POST";
+        }
+
+        try {
+            const res = await fetch(urlForm, {
+                method: method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(filteredData),
+            });
+            window.location.href = "{{ url_for(url_for_view_read_many) }}";
+        } catch (err) {
+            console.error("request failed", err);
+            alert("Request failed. Check console for details.");
+        }
+    });
+</script>
